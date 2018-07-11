@@ -1,0 +1,36 @@
+#! /usr/bin/env bash
+
+# Télécharge les résultats électoraux par section de vote (dgeq) et convertie en utf-8
+#
+#  SYNOPSIS
+#      downloadAndNormalizeGeneralResults <année> <output_dir>
+
+
+tmp_dir=build/tmp/general
+rm -r $tmp_dir
+mkdir -p $tmp_dir
+
+if [ "$1" -eq "2014" ]; then
+   url="https://www.electionsquebec.qc.ca/documents/zip/resultats-section-vote/2014-04-07.zip"
+elif [ "$1" -eq "2012" ]; then
+   url="https://www.electionsquebec.qc.ca/francais/provincial/resultats-electoraux/elections-generales.php?e=72&s=15#s"
+elif [ "$1" -eq "2008" ]; then
+   url="https://www.electionsquebec.qc.ca/francais/provincial/resultats-electoraux/elections-generales.php?e=3&s=15#s"
+elif [ "$1" -eq "2007" ]; then
+   url="https://www.electionsquebec.qc.ca/francais/provincial/resultats-electoraux/elections-generales.php?e=6&s=15#s"
+elif [ "$1" -eq "2003" ]; then
+   url="https://www.electionsquebec.qc.ca/francais/provincial/resultats-electoraux/elections-generales.php?e=12&s=15#s"
+elif [ "$1" -eq "1998" ]; then
+   url="https://www.electionsquebec.qc.ca/francais/provincial/resultats-electoraux/elections-generales.php?e=18&s=1#s"
+else
+   echo "Il n'y a pas eu d'élections générales ou les résultats ne sont pas disponibles pour cette années \"$1\""
+   rm -r $tmp_dir
+fi
+
+# télécharge
+wget $url -O data/results$1.zip
+
+# décompresse
+7z x data/results$1.zip -odata/results$1
+
+# convertie les noms de fichiers en utf-8

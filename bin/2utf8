@@ -1,0 +1,25 @@
+#! /usr/bin/env bash
+#
+# Convertie un fichier en utf-8 (nom de fichier et contenu)
+#
+#  SYNOPSIS
+#      2utf8 <input file> <output file>
+#
+
+
+tmp=.$(date | md5sum | cut -d" " -f1)
+
+if [ ! -f $1 ]; then
+   echo "Le fichier $1 n'existe pas"
+   exit 1
+fi
+
+if [ -f $tmp ]; then
+   echo "Oups... pas de chance, le fichier temporaire existe déjà"
+   exit 1
+fi
+
+if [ ! -f $2 ]; then
+   echo "Le fichier $2 existe pas déjà"
+   exit 1
+fi

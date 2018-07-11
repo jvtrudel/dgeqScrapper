@@ -1,0 +1,44 @@
+#! /usr/bin/env bash
+#
+# Transforme un fichier shapefile en geojson
+#
+# SYNOPSIS
+#   shapefile2geojson <shapefile_directory> <shapefile_name> <export_csr> [<output_directory>] [<output_name>]
+#
+
+dir=$1
+shapefile=$2
+csr=$3
+
+in=$dir/$shapefile.shp
+
+if [ ! -d $dir ]; then
+   echo "Le répertoire $dir n'existe pas"
+   exit 1
+fi
+
+if [ ! -f $in ]; then
+   echo "Le répertoire $in n'existe pas"
+   exit 1
+fi
+
+
+if [ "$#" -ge "4" ]; then
+   outdir=$4
+else
+   outdir=.
+fi
+
+if [ "$#" -ge "5" ]; then
+   out=$outdir/$5.geojson
+else
+   out=$outdir/$shapefile.geojson
+fi
+
+# Conversion au format geojson
+tmp=build/tmp/tmp.geojson
+ogr2ogr -f GeoJSON -t_srs $csr $tmp $in
+
+# on met l'encodage en utf-8 pour éviter les problèmes
+file -I $tmp | cut -d"=" -f2 | awk '{ print toupper($0)}' | xargs -I % iconv -f % -t UTF-8 $tmp > $out
+rm $tmp
