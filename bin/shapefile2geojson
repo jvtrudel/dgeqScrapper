@@ -3,12 +3,12 @@
 # Transforme un fichier shapefile en geojson
 #
 # SYNOPSIS
-#   shapefile2geojson <shapefile_directory> <shapefile_name> <export_csr> [<output_directory>] [<output_name>]
+#   shapefile2geojson <shapefile_directory> <shapefile_name> <export_srs> [<output_directory>] [<output_name>]
 #
 
 dir=$1
 shapefile=$2
-csr=$3
+srs=$3
 
 in=$dir/$shapefile.shp
 
@@ -36,9 +36,10 @@ else
 fi
 
 # Conversion au format geojson
+mkdir -p build/tmp
 tmp=build/tmp/tmp.geojson
-ogr2ogr -f GeoJSON -t_srs $csr $tmp $in
+ogr2ogr -f GeoJSON -t_srs $srs $tmp $in
 
 # on met l'encodage en utf-8 pour éviter les problèmes
 file -I $tmp | cut -d"=" -f2 | awk '{ print toupper($0)}' | xargs -I % iconv -f % -t UTF-8 $tmp > $out
-rm $tmp
+rm -rf build/tmp

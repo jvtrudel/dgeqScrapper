@@ -1,0 +1,64 @@
+#! /bin/bash
+
+# get year from user
+year=$1
+
+# get spatial reference system
+srs=$2
+
+# retrieve url from year
+url=$(cat url_shapefiles.dat | grep $year | cut -d" " -f2)
+
+# check if data is available for this year
+if [ "$url" == "" ]; then
+	echo "Il n'y a pas de carte électorale répertoriée pour l'année $year"
+	exit 1
+fi
+
+# get filename
+IFS='/' read -ra fname <<< "$url"
+for i in "${fname[@]}"; do
+    fname="$i"
+done
+
+# nom du répertoire shapefile
+IFS='.' read -ra sname <<< "$fname"
+
+
+# s'assure qu'il y a un répertoire cible
+mkdir -p build/$year
+
+# récupère les data au besoin
+if [ ! -f build/$year/$fname ]; then
+	wget $url -O build/$year/$fname
+else
+	echo "Le fichier géométrie pour l'année $year existe déjà"
+fi
+
+# s'assure que le téléchargement a réussi
+if [ ! -f build/$year/$fname ]; then
+	echo "Le téléchargement du fichier géométrie pour l'année $year a échoué"
+	exit 1
+fi
+
+# nom des fichiers shapefile
+tmp=$(ls build/$year/$sname | grep .shp | grep -v .shp.)
+IFS='.' read -ra rname <<< "$tmp"
+
+# unzip
+if [ ! -f build/$year/$sname/$rname.shp ]; then
+  unzip build/$year/$fname -d build/$year
+else
+	echo "Le fichier $fname a déjà été dézippé"
+fi
+
+
+if [ ! -f build/$year/sections-de-vote-$year.geojson ]; then
+   bin/shapefile2geojson build/$year/$sname $rname $srs build/$year sections-de-vote-$year
+else
+	echo "Le fichier fichier shape file a déjà été transformé en geojson"
+fi
+
+prop=$(cat url_shapefiles.dat | grep $year | cut -d" " -f3)
+
+bin/splitGeojsonByProperties $prop build/$year/sections-de-vote-$year.geojson build/$year circonscription-2018

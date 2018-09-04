@@ -1,45 +1,31 @@
+#! /usr/bin/env ruby
+
 require 'json'
 require 'fileutils'
-
 # Prend un fichier geojson contenant un 'FeatureCollection' et produit un fichier pour chaque propriété désignée
 #
 # EXEMPLE:
-#    splitGeojsonByProperties.rb mydata.geojson my_properties outputfile
+#    splitGeojsonByProperties.rb <target_path> <result_dir> <result_name>
 
 
-=begin
-# bonne idée de mettre ça sous forme de classe?
-class geojson
 
-   def initialize()
-      @metadata={}
-      @features=[]
-   end
-
-   def add_metadata(name,value)
-      # ajoute une metadata
-   end
-
-   def add_feature(feature)
-      # ajoute une feature
-   end
-
-   def print(path)
-      # imprime
-   end
-end
-=end
 
 
 # À la mitaine avec les données de 2014
 # TODO: utiliser des arguments en entré
 
 # variables
-target_property="NM_TRI_CEP";
 
+input_data=ARGV
+
+target_property=input_data[0]
+target=input_data[1]
+output_dir=input_data[2]
+output_name=input_data[3]
 
 # Importation des données
-file=File.read('build/tmp/secteurs2014.geojson');
+file=File.read(target);
+puts target
 source=JSON.parse(file);
 
 # On récupère des méta-données pertinentes
@@ -65,7 +51,10 @@ end
 # Écrit le tout dans un fichier
 data.each do |key,value|
    # On s'assure que le repertoire existe
-   filename='build/tmp/'+key+'/data.geojson'
+	 puts output_dir
+	 puts output_name
+	 puts key
+   filename=output_dir+'/'+output_name+'-'+key+'.geo.json'
    dirname = File.dirname(filename)
    unless File.directory?(dirname)
      FileUtils.mkdir_p(dirname)
